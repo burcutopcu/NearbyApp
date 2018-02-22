@@ -43,14 +43,13 @@ import retrofit2.Response;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        LocationListener
-        {
+        LocationListener {
 
     private static final int MY_PERMISSION_CODE = 1000;
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
 
-    private  double latitude,longitude;
+    private double latitude, longitude;
     private Location mLastLocation;
     private Marker mMarker;
     private LocationRequest mLocationRequest;
@@ -67,96 +66,97 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
         //Init service
-        mService= Common.getGoogleAPIService();
+        mService = Common.getGoogleAPIService();
 
         //Runtime Permission
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
         }
-        BottomNavigationView bottomNavigationView=(BottomNavigationView) findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener(){
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
 
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-               switch(item.getItemId()) {
-                   case R.id.action_hospital:
-                       nearByPlace("hospital");
-                       break;
-                   case R.id.action_market:
-                       nearByPlace("market");
-                       break;
-                   case R.id.action_school:
-                       nearByPlace("school");
-                       break;
-                   case R.id.action_restaurant:
-                       nearByPlace("restaurant");
-                       break;
-                   default:
-                       break;
-               }
+                switch (item.getItemId()) {
+                    case R.id.action_hospital:
+                        nearByPlace("hospital");
+                        break;
+                    case R.id.action_market:
+                        nearByPlace("market");
+                        break;
+                    case R.id.action_school:
+                        nearByPlace("school");
+                        break;
+                    case R.id.action_restaurant:
+                        nearByPlace("restaurant");
+                        break;
+                    default:
+                        break;
+                }
                 return true;
             }
         });
     }
 
-            private void nearByPlace(final String placeType) {
-                mMap.clear();
-                String url= getUrl(latitude,longitude,placeType);
+    private void nearByPlace(final String placeType) {
+        mMap.clear();
+        String url = getUrl(latitude, longitude, placeType);
 
-                mService.getNearByPlaces(url)
-                        .enqueue(new Callback<MyPlaces>() {
-                            @Override
-                            public void onResponse(Call<MyPlaces> call, Response<MyPlaces> response) {
-                                if(response.isSuccessful()) {
-                                    for(int i=0; i<response.body().getResults().length;i++) {
-                                        MarkerOptions markerOptions= new MarkerOptions();
-                                        Results googlePlace= response.body().getResults()[i];
-                                        double lat = Double.parseDouble(googlePlace.getGeometry().getLocation().getLat());
-                                        double lng = Double.parseDouble(googlePlace.getGeometry().getLocation().getLng());
+        mService.getNearByPlaces(url)
+                .enqueue(new Callback<MyPlaces>() {
+                    @Override
+                    public void onResponse(Call<MyPlaces> call, Response<MyPlaces> response) {
+                        if (response.isSuccessful()) {
+                            for (int i = 0; i < response.body().getResults().length; i++) {
+                                MarkerOptions markerOptions = new MarkerOptions();
+                                Results googlePlace = response.body().getResults()[i];
+                                double lat = Double.parseDouble(googlePlace.getGeometry().getLocation().getLat());
+                                double lng = Double.parseDouble(googlePlace.getGeometry().getLocation().getLng());
 
-                                        String placeName=googlePlace.getName();
-                                        String vicinity=googlePlace.getVicinity();
+                                String placeName = googlePlace.getName();
+                                String vicinity = googlePlace.getVicinity();
 
-                                        LatLng latlng= new LatLng(lat,lng);
-                                        markerOptions.position(latlng);
-                                        markerOptions.title(placeName);
-                                        if(placeType.equals("hospital")) {
-                                            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                                        }
-                                        else if (placeType.equals("restaurant")) {
-                                            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                                        }
-                                        else if (placeType.equals("school")) {
-                                            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                                        }
-                                        else if (placeType.equals("market")) {
-                                            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                                        }
-                                        else{
-                                            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                                        }
-
-                                        mMap.addMarker(markerOptions);
-
-                                        mMap.moveCamera(CameraUpdateFactory.newLatLng(latlng));
-                                        mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
-
-                                    }
+                                LatLng latlng = new LatLng(lat, lng);
+                                markerOptions.position(latlng);
+                                markerOptions.title(placeName);
+                                if (placeType.equals("hospital")) {
+                                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                                } else if (placeType.equals("restaurant")) {
+                                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                                } else if (placeType.equals("school")) {
+                                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                                } else if (placeType.equals("market")) {
+                                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                                } else {
+                                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
                                 }
+
+                                mMap.addMarker(markerOptions);
+
+                                mMap.moveCamera(CameraUpdateFactory.newLatLng(latlng));
+                                mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+
                             }
+                        }
+                    }
 
-                            @Override
-                            public void onFailure(Call<MyPlaces> call, Throwable t) {
+                    @Override
+                    public void onFailure(Call<MyPlaces> call, Throwable t) {
+                        Toast.makeText(MapsActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
 
-                            }
-                        });
+    }
 
+    private String getUrl(double latitude, double longitude, String placeType) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             }
-
-            private String getUrl(double latitude, double longitude, String placeType) {
+            Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            double currentLatitude = location.getLatitude();
+            double currentLongitude = location.getLongitude();
             StringBuilder googlePlaceUrl = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
-            googlePlaceUrl.append("location="+latitude+","+longitude);
+            googlePlaceUrl.append("location="+currentLatitude+","+currentLongitude);
             googlePlaceUrl.append("&radius="+1000);
             googlePlaceUrl.append("&type="+placeType);
             googlePlaceUrl.append("&sensor=true");
@@ -263,29 +263,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
-            @Override
-            public void onLocationChanged(Location location) {
-                mLastLocation= location;
-                if(mMarker != null) {
-                    mMarker.remove();
-                }
 
-                latitude=location.getLatitude();
-                longitude=location.getLongitude();
+    @Override
+    public void onLocationChanged(Location location) {
+        mLastLocation= location;
+        if(mMarker != null) {
+            mMarker.remove();
+        }
 
-                LatLng latlng=new LatLng(latitude,longitude);
-                MarkerOptions markerOptions=new MarkerOptions()
-                        .position(latlng)
-                        .title("Your Position")
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-            mMarker= mMap.addMarker(markerOptions);
+        latitude=location.getLatitude();
+        longitude=location.getLongitude();
 
-            //Move Camera
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(latlng));
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+        LatLng latlng=new LatLng(latitude,longitude);
+        MarkerOptions markerOptions=new MarkerOptions()
+                .position(latlng)
+                .title("Your Position")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+    mMarker= mMap.addMarker(markerOptions);
 
-            if(mGoogleApiClient != null) {
-                LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,this);
-            }
+    //Move Camera
+    mMap.moveCamera(CameraUpdateFactory.newLatLng(latlng));
+    mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+
+    if(mGoogleApiClient != null) {
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,this);
     }
+}
         }
