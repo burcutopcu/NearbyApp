@@ -29,6 +29,7 @@ public class Results {
 
     private Geometry geometry;
 
+
     public Photos[] getPhotos ()
     {
         return photos;

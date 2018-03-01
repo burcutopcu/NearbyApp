@@ -5,9 +5,21 @@ package com.example.ubiquity.nearbyapp.Model;
  */
 
 public class Opening_hours {
+    private Periods[] periods;
+
     private String open_now;
 
     private String[] weekday_text;
+
+    public Periods[] getPeriods ()
+    {
+        return periods;
+    }
+
+    public void setPeriods (Periods[] periods)
+    {
+        this.periods = periods;
+    }
 
     public String getOpen_now ()
     {
@@ -32,6 +44,6 @@ public class Opening_hours {
     @Override
     public String toString()
     {
-        return "ClassPojo [open_now = "+open_now+", weekday_text = "+weekday_text+"]";
+        return "ClassPojo [periods = "+periods+", open_now = "+open_now+", weekday_text = "+weekday_text+"]";
     }
 }
