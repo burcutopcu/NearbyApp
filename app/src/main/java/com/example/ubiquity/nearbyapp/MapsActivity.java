@@ -2,6 +2,7 @@ package com.example.ubiquity.nearbyapp;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
@@ -56,6 +57,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     IGoogleAPIService mService;
 
+    MyPlaces currentPlaces;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,6 +110,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .enqueue(new Callback<MyPlaces>() {
                     @Override
                     public void onResponse(Call<MyPlaces> call, Response<MyPlaces> response) {
+
+                        currentPlaces=response.body(); //Remembers assign value for currentplaces
+
                         if (response.isSuccessful()) {
                             for (int i = 0; i < response.body().getResults().length; i++) {
                                 MarkerOptions markerOptions = new MarkerOptions();
@@ -121,21 +127,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 markerOptions.position(latlng);
                                 markerOptions.title(placeName);
                                 if (placeType.equals("hospital")) {
-                                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                                    markerOptions.icon(BitmapDescriptorFactory.fromResource(R.mipmap.nurse));
                                 } else if (placeType.equals("restaurant")) {
-                                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                                    markerOptions.icon(BitmapDescriptorFactory.fromResource(R.mipmap.restaurant));
                                 } else if (placeType.equals("school")) {
-                                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                                    markerOptions.icon(BitmapDescriptorFactory.fromResource(R.mipmap.schoool));
                                 } else if (placeType.equals("market")) {
-                                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                                    markerOptions.icon(BitmapDescriptorFactory.fromResource(R.mipmap.shopping));
                                 } else {
-                                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
                                 }
+
+                                markerOptions.snippet(String.valueOf(i)); //Assign index for marker
 
                                 mMap.addMarker(markerOptions);
 
                                 mMap.moveCamera(CameraUpdateFactory.newLatLng(latlng));
-                                mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+                                mMap.animateCamera(CameraUpdateFactory.zoomTo(13));
 
                             }
                         }
@@ -228,6 +236,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.setMyLocationEnabled(true);
 
             }
+
+            // Make event click on marker
+                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        //just get result of place and assign to static variable
+                        Common.currentResult = currentPlaces.getResults()[Integer.parseInt(marker.getSnippet())];
+                        startActivity(new Intent(MapsActivity.this, DetailPlace.class));
+
+                        return true;
+                    }
+                });
     }
 
     private synchronized void buildGoogleAPIClient() {
