@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.internal.BottomNavigationItemView;
@@ -17,6 +18,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.design.widget.BottomNavigationView.OnNavigationItemSelectedListener;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.ubiquity.nearbyapp.Model.MyPlaces;
@@ -50,10 +53,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
 
+    ProgressBar progressBar;
+
     private double latitude, longitude;
     private Location mLastLocation;
     private Marker mMarker;
     private LocationRequest mLocationRequest;
+
+    private SupportMapFragment mapFragment;
+    private BottomNavigationView bottomNavigationView;
 
     IGoogleAPIService mService;
 
@@ -63,8 +71,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        progressBar = findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
@@ -76,23 +88,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
         }
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
 
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.action_hospital:
-                        nearByPlace("hospital");
+                        nearByPlace("hospital",0);
                         break;
                     case R.id.action_market:
-                        nearByPlace("market");
+                        nearByPlace("market",1);
                         break;
                     case R.id.action_school:
-                        nearByPlace("school");
+                        nearByPlace("school",2);
                         break;
                     case R.id.action_restaurant:
-                        nearByPlace("restaurant");
+                        nearByPlace("restaurant",3);
                         break;
                     default:
                         break;
@@ -102,8 +114,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-    private void nearByPlace(final String placeType) {
-        mMap.clear();
+    private void nearByPlace(final String placeType, int selection) {
+        progressBar.setVisibility(View.VISIBLE);
+        if (mMap != null && mapFragment.getView() != null){
+            mapFragment.getView().setAlpha(0.5f);
+            mMap.getUiSettings().setScrollGesturesEnabled(false);
+            mMap.getUiSettings().setZoomGesturesEnabled(false);
+
+        }
+        if(mMap != null) {
+            mMap.clear();
+        }
+
+        switch (selection){
+
+            case 0:
+                bottomNavigationView.getMenu().getItem(1).setEnabled(false);
+                bottomNavigationView.getMenu().getItem(2).setEnabled(false);
+                bottomNavigationView.getMenu().getItem(3).setEnabled(false);
+                break;
+            case 1:
+                bottomNavigationView.getMenu().getItem(0).setEnabled(false);
+                bottomNavigationView.getMenu().getItem(2).setEnabled(false);
+                bottomNavigationView.getMenu().getItem(3).setEnabled(false);
+                break;
+            case 2:
+                bottomNavigationView.getMenu().getItem(1).setEnabled(false);
+                bottomNavigationView.getMenu().getItem(0).setEnabled(false);
+                bottomNavigationView.getMenu().getItem(3).setEnabled(false);
+                break;
+            case 3:
+                bottomNavigationView.getMenu().getItem(1).setEnabled(false);
+                bottomNavigationView.getMenu().getItem(2).setEnabled(false);
+                bottomNavigationView.getMenu().getItem(0).setEnabled(false);
+                break;
+
+        }
         String url = getUrl(latitude, longitude, placeType);
 
         mService.getNearByPlaces(url)
@@ -140,9 +186,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                 markerOptions.snippet(String.valueOf(i)); //Assign index for marker
 
-                                mMap.addMarker(markerOptions);
+                                progressBar.setVisibility(View.GONE);
+                                if (mMap != null && mapFragment.getView() != null){
+                                    mapFragment.getView().setAlpha(1);
+                                    mMap.getUiSettings().setScrollGesturesEnabled(true);
+                                    mMap.getUiSettings().setZoomGesturesEnabled(true);
+                                }
 
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(latlng));
+                                for (int k= 0; k<4; k ++){
+                                    bottomNavigationView.getMenu().getItem(k).setEnabled(true);
+                                }
+                                mMap.addMarker(markerOptions);
+                                mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lat,lng)));
                                 mMap.animateCamera(CameraUpdateFactory.zoomTo(13));
 
                             }
